@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 import random
+from flask_cors import CORS  
 
 app = Flask(__name__)
+CORS(app)  
+
 
 class SimpleClassifier:
     def __init__(self):
@@ -35,25 +38,48 @@ def home():
         "status": "fully_operational"
     })
 
-@app.route('/classify-waste', methods=['POST'])
+@app.route('/classify-waste', methods=['POST', 'OPTIONS']) 
 def classify_waste():
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+    
     waste_type, confidence = classifier.predict()
     tips = {
         'recyclable': ["Rinse containers", "Check local guidelines"],
         'organic': ["Compost food scraps", "Use compost bin"],
         'landfill': ["Reduce single-use items", "Consider repair"]
     }
-    return jsonify({
+    
+    response = jsonify({
         "waste_type": waste_type,
         "confidence": confidence,
         "tips": tips.get(waste_type, [])
     })
+    
+    return _corsify_actual_response(response)
 
-@app.route('/analyze-product', methods=['POST'])
+@app.route('/analyze-product', methods=['POST', 'OPTIONS']) 
 def analyze_product():
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+    
     analysis = ocr.analyze()
-    return jsonify(analysis)
+    response = jsonify(analysis)
+    return _corsify_actual_response(response)
+
+# CORS helper functions
+def _build_cors_preflight_response():
+    response = jsonify()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
+
+def _corsify_actual_response(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 if __name__ == '__main__':
     print("WORKING EcoLife Server Starting...")
+    print("CORS Enabled - Frontend can now connect!")
     app.run(host='0.0.0.0', port=5500, debug=True)
