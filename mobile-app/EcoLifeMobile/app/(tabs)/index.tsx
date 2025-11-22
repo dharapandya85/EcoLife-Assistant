@@ -46,38 +46,52 @@ interface ProductResult {
 
 type ApiResult = AdvancedWasteResult | SimpleWasteResult | ProductResult | { error: string };
 
-// SVG Icons
+// Premium SVG Icons
 const CameraIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <Path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Circle cx="12" cy="13" r="4" stroke="white" strokeWidth="2"/>
+    <Path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Circle cx="12" cy="13" r="4" stroke="#059669" strokeWidth="2"/>
   </Svg>
 );
 
 const GalleryIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <Path d="M4 16L8.586 11.414C8.96106 11.0391 9.46967 10.8284 10 10.8284C10.5303 10.8284 11.0389 11.0391 11.414 11.414L16 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="2"/>
+    <Path d="M4 16L8.586 11.414C8.96106 11.0391 9.46967 10.8284 10 10.8284C10.5303 10.8284 11.0389 11.0391 11.414 11.414L16 16" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Rect x="3" y="3" width="18" height="18" rx="2" stroke="#059669" strokeWidth="2"/>
   </Svg>
 );
 
 const RecycleIcon = () => (
   <Svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-    <Path d="M16 2L20 6L16 10M8 22L4 18L8 14M20 6H10C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V18M4 18H14C15.0609 18 16.0783 17.5786 16.8284 16.8284C17.5786 16.0783 18 15.0609 18 14V6" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M16 2L20 6L16 10M8 22L4 18L8 14M20 6H10C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V18M4 18H14C15.0609 18 16.0783 17.5786 16.8284 16.8284C17.5786 16.0783 18 15.0609 18 14V6" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
 );
 
 const WarningIcon = () => (
   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <Path d="M10.29 3.86L1.82 18C1.64537 18.3024 1.55296 18.6453 1.55199 18.9945C1.55101 19.3437 1.64149 19.6871 1.81442 19.9905C1.98735 20.2939 2.23673 20.5467 2.53771 20.7239C2.8387 20.901 3.18067 20.9962 3.53 21H20.47C20.8193 20.9962 21.1613 20.901 21.4623 20.7239C21.7633 20.5467 22.0127 20.2939 22.1856 19.9905C22.3585 19.6871 22.449 19.3437 22.448 18.9945C22.447 18.6453 22.3546 18.3024 22.18 18L13.71 3.86C13.5317 3.56611 13.2807 3.32312 12.9812 3.15448C12.6817 2.98585 12.3437 2.89725 12 2.89725C11.6563 2.89725 11.3183 2.98585 11.0188 3.15448C10.7193 3.32312 10.4683 3.56611 10.29 3.86Z" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Line x1="12" y1="9" x2="12" y2="13" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
-    <Circle cx="12" cy="17" r="1" fill="#F59E0B"/>
+    <Path d="M10.29 3.86L1.82 18C1.64537 18.3024 1.55296 18.6453 1.55199 18.9945C1.55101 19.3437 1.64149 19.6871 1.81442 19.9905C1.98735 20.2939 2.23673 20.5467 2.53771 20.7239C2.8387 20.901 3.18067 20.9962 3.53 21H20.47C20.8193 20.9962 21.1613 20.901 21.4623 20.7239C21.7633 20.5467 22.0127 20.2939 22.1856 19.9905C22.3585 19.6871 22.449 19.3437 22.448 18.9945C22.447 18.6453 22.3546 18.3024 22.18 18L13.71 3.86C13.5317 3.56611 13.2807 3.32312 12.9812 3.15448C12.6817 2.98585 12.3437 2.89725 12 2.89725C11.6563 2.89725 11.3183 2.98585 11.0188 3.15448C10.7193 3.32312 10.4683 3.56611 10.29 3.86Z" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Line x1="12" y1="9" x2="12" y2="13" stroke="#D97706" strokeWidth="2" strokeLinecap="round"/>
+    <Circle cx="12" cy="17" r="1" fill="#D97706"/>
   </Svg>
 );
 
 const StarIcon = ({ filled }: { filled: boolean }) => (
-  <Svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "#10B981" : "none"}>
-    <Path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <Svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "#059669" : "none"}>
+    <Path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+const LeafIcon = () => (
+  <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <Path d="M12 2C12 2 3 7 3 14C3 17.866 6.582 21 12 21C17.418 21 21 17.866 21 14C21 7 12 2 12 2Z" stroke="#059669" strokeWidth="2"/>
+    <Path d="M12 2V21" stroke="#059669" strokeWidth="2"/>
+    <Path d="M12 13C15.866 13 19 10.866 19 7" stroke="#059669" strokeWidth="2"/>
+  </Svg>
+);
+
+const AnalyzeIcon = () => (
+  <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <Path d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
 );
 
@@ -179,11 +193,11 @@ export default function HomeScreen() {
   };
 
   const getWasteColor = (type: string): string => {
-    if (type.includes('recyclable')) return '#10B981';
-    if (type.includes('organic')) return '#F59E0B';
-    if (type === 'hazardous') return '#EF4444';
-    if (type === 'e_waste') return '#8B5CF6';
-    return '#6B7280';
+    if (type.includes('recyclable')) return '#059669';
+    if (type.includes('organic')) return '#D97706';
+    if (type === 'hazardous') return '#DC2626';
+    if (type === 'e_waste') return '#7C3AED';
+    return '#4B5563';
   };
 
   const formatWasteType = (type: string): string => {
@@ -205,7 +219,10 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text style={styles.title}>🌱 EcoLife</Text>
+        <View style={styles.titleContainer}>
+          <LeafIcon />
+          <Text style={styles.title}>EcoLife</Text>
+        </View>
         <Text style={styles.subtitle}>Advanced Waste Intelligence</Text>
         
         <TouchableOpacity 
@@ -213,17 +230,20 @@ export default function HomeScreen() {
           onPress={() => setShowModeModal(true)}
         >
           <Text style={styles.modeButtonText}>
-            Mode: {mode === 'advanced' ? '🔬 Advanced' : '⚡ Simple'}
+            {mode === 'advanced' ? 'Advanced Analysis' : 'Simple Classification'}
           </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>📸 Waste Classification</Text>
+        <View style={styles.cardHeader}>
+          <RecycleIcon />
+          <Text style={styles.cardTitle}>Waste Classification</Text>
+        </View>
         <Text style={styles.cardDescription}>
           {mode === 'advanced' 
-            ? 'Get detailed analysis with 9 waste categories, disposal instructions, and eco tips'
-            : 'Quick classification into recyclable, organic, or landfill'}
+            ? 'Get detailed analysis with 9 waste categories, disposal instructions, and environmental guidance'
+            : 'Quick classification into recyclable, organic, or landfill categories'}
         </Text>
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.primaryButton} onPress={takePicture}>
@@ -238,27 +258,30 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>🔍 Product Analysis</Text>
+        <View style={styles.cardHeader}>
+          <AnalyzeIcon />
+          <Text style={styles.cardTitle}>Product Analysis</Text>
+        </View>
         <Text style={styles.cardDescription}>
-          Analyze product sustainability and environmental impact
+          Analyze product sustainability and environmental impact metrics
         </Text>
         <TouchableOpacity style={styles.secondaryButton} onPress={analyzeProduct}>
-          <Text style={styles.secondaryButtonText}>Analyze Product (Demo)</Text>
+          <Text style={styles.secondaryButtonText}>Analyze Product</Text>
         </TouchableOpacity>
       </View>
 
       {selectedImage && (
         <View style={styles.imagePreview}>
-          <Text style={styles.previewTitle}>Selected Image:</Text>
+          <Text style={styles.previewTitle}>Selected Image</Text>
           <Image source={{ uri: selectedImage }} style={styles.previewImage} />
         </View>
       )}
 
       {loading && (
         <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#10B981" />
+          <ActivityIndicator size="large" color="#059669" />
           <Text style={styles.loadingText}>
-            {mode === 'advanced' ? 'Running advanced analysis...' : 'Processing...'}
+            {mode === 'advanced' ? 'Running advanced analysis...' : 'Processing image...'}
           </Text>
         </View>
       )}
@@ -267,10 +290,10 @@ export default function HomeScreen() {
         <View style={styles.resultCard}>
           {'error' in result ? (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>❌ Error</Text>
+              <Text style={styles.errorTitle}>Analysis Error</Text>
               <Text style={styles.errorDetail}>{result.error}</Text>
               <Text style={styles.errorHint}>
-                💡 Make sure your backend is running on {API_BASE}
+                Ensure your backend server is running on {API_BASE}
               </Text>
             </View>
           ) : (
@@ -288,7 +311,7 @@ export default function HomeScreen() {
                   </View>
 
                   <View style={styles.confidenceBar}>
-                    <Text style={styles.confidenceLabel}>Confidence</Text>
+                    <Text style={styles.confidenceLabel}>Confidence Level</Text>
                     <View style={styles.progressBar}>
                       <View style={[styles.progressFill, { 
                         width: `${result.confidence * 100}%`,
@@ -299,20 +322,20 @@ export default function HomeScreen() {
                   </View>
 
                   <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>♻️ Recycling Code</Text>
+                    <Text style={styles.sectionTitle}>Recycling Code</Text>
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>{result.recycling_code}</Text>
                     </View>
                   </View>
 
                   <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>📋 Disposal Instructions</Text>
+                    <Text style={styles.sectionTitle}>Disposal Instructions</Text>
                     <Text style={styles.sectionContent}>{result.disposal_instructions}</Text>
                   </View>
 
                   {result.subcategories.length > 0 && (
                     <View style={styles.section}>
-                      <Text style={styles.sectionTitle}>🏷️ Subcategories</Text>
+                      <Text style={styles.sectionTitle}>Subcategories</Text>
                       <View style={styles.chipContainer}>
                         {result.subcategories.map((sub, idx) => (
                           <View key={idx} style={styles.chip}>
@@ -327,7 +350,7 @@ export default function HomeScreen() {
                     <View style={[styles.section, styles.warningSection]}>
                       <View style={styles.warningSectionHeader}>
                         <WarningIcon />
-                        <Text style={styles.sectionTitle}>⚠️ Contamination Warnings</Text>
+                        <Text style={styles.sectionTitle}>Contamination Warnings</Text>
                       </View>
                       {result.contamination_warnings.map((warning, idx) => (
                         <Text key={idx} style={styles.warningText}>
@@ -339,7 +362,7 @@ export default function HomeScreen() {
 
                   {result.tips.length > 0 && (
                     <View style={styles.section}>
-                      <Text style={styles.sectionTitle}>💡 Eco Tips</Text>
+                      <Text style={styles.sectionTitle}>Environmental Tips</Text>
                       {result.tips.slice(0, 3).map((tip, idx) => (
                         <Text key={idx} style={styles.tipText}>• {tip}</Text>
                       ))}
@@ -365,7 +388,7 @@ export default function HomeScreen() {
 
                   {result.tips.length > 0 && (
                     <View style={styles.section}>
-                      <Text style={styles.sectionTitle}>💡 Tips</Text>
+                      <Text style={styles.sectionTitle}>Guidance</Text>
                       {result.tips.map((tip, idx) => (
                         <Text key={idx} style={styles.tipText}>• {tip}</Text>
                       ))}
@@ -376,7 +399,7 @@ export default function HomeScreen() {
 
               {isProductResult(result) && (
                 <>
-                  <Text style={styles.resultTitle}>🌍 Product Sustainability</Text>
+                  <Text style={styles.resultTitle}>Product Sustainability</Text>
                   
                   <View style={styles.scoreSection}>
                     <Text style={styles.scoreLabel}>Sustainability Score</Text>
@@ -393,7 +416,7 @@ export default function HomeScreen() {
 
                   {result.found_keywords.length > 0 && (
                     <View style={styles.section}>
-                      <Text style={styles.sectionTitle}>🔑 Keywords Found</Text>
+                      <Text style={styles.sectionTitle}>Keywords Identified</Text>
                       <View style={styles.chipContainer}>
                         {result.found_keywords.map((kw, idx) => (
                           <View key={idx} style={styles.chip}>
@@ -406,7 +429,7 @@ export default function HomeScreen() {
 
                   {result.extracted_text && (
                     <View style={styles.section}>
-                      <Text style={styles.sectionTitle}>📝 Extracted Text</Text>
+                      <Text style={styles.sectionTitle}>Extracted Text</Text>
                       <Text style={styles.sectionContent}>{result.extracted_text}</Text>
                     </View>
                   )}
@@ -425,7 +448,7 @@ export default function HomeScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Classification Mode</Text>
+            <Text style={styles.modalTitle}>Select Analysis Mode</Text>
             
             <TouchableOpacity
               style={[styles.modeOption, mode === 'advanced' && styles.modeOptionSelected]}
@@ -434,9 +457,9 @@ export default function HomeScreen() {
                 setShowModeModal(false);
               }}
             >
-              <Text style={styles.modeOptionTitle}>🔬 Advanced Mode</Text>
+              <Text style={styles.modeOptionTitle}>Advanced Analysis</Text>
               <Text style={styles.modeOptionDesc}>
-                9 detailed categories with disposal instructions, recycling codes, and eco tips
+                Detailed classification with 9 waste categories, disposal instructions, recycling codes, and environmental guidance
               </Text>
             </TouchableOpacity>
 
@@ -447,9 +470,9 @@ export default function HomeScreen() {
                 setShowModeModal(false);
               }}
             >
-              <Text style={styles.modeOptionTitle}>⚡ Simple Mode</Text>
+              <Text style={styles.modeOptionTitle}>Simple Classification</Text>
               <Text style={styles.modeOptionDesc}>
-                Quick 3-category classification: recyclable, organic, or landfill
+                Quick three-category classification: recyclable, organic, or landfill waste
               </Text>
             </TouchableOpacity>
 
@@ -469,7 +492,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FCF9',
     paddingHorizontal: 20,
     paddingTop: 50,
   },
@@ -477,48 +500,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
   },
-  title: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: '#111827',
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     marginBottom: 8,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#065F46',
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#047857',
     marginBottom: 16,
+    fontWeight: '500',
   },
   modeButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#ECFDF5',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
   },
   modeButtonText: {
-    color: '#FFFFFF',
+    color: '#065F46',
     fontWeight: '600',
     fontSize: 14,
   },
   card: {
     backgroundColor: '#FFFFFF',
     padding: 24,
-    borderRadius: 16,
+    borderRadius: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#064E3B',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowRadius: 12,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#F0FDF4',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
   },
   cardTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
+    color: '#064E3B',
   },
   cardDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#047857',
     marginBottom: 20,
     lineHeight: 20,
   },
@@ -527,20 +566,27 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#065F46',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 8,
+    shadowColor: '#064E3B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   secondaryButton: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#ECFDF5',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
   },
   buttonText: {
     color: '#FFFFFF',
@@ -548,21 +594,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   secondaryButtonText: {
-    color: '#111827',
+    color: '#065F46',
     fontWeight: '600',
     fontSize: 16,
   },
   imagePreview: {
     backgroundColor: '#FFFFFF',
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     marginBottom: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0FDF4',
   },
   previewTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#047857',
     marginBottom: 12,
   },
   previewImage: {
@@ -573,26 +621,30 @@ const styles = StyleSheet.create({
   loadingCard: {
     backgroundColor: '#FFFFFF',
     padding: 40,
-    borderRadius: 16,
+    borderRadius: 20,
     alignItems: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F0FDF4',
   },
   loadingText: {
     marginTop: 16,
-    color: '#6B7280',
+    color: '#047857',
     fontSize: 16,
     fontWeight: '500',
   },
   resultCard: {
     backgroundColor: '#FFFFFF',
     padding: 24,
-    borderRadius: 16,
+    borderRadius: 20,
     marginBottom: 30,
-    shadowColor: '#000',
+    shadowColor: '#064E3B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 5,
+    borderWidth: 1,
+    borderColor: '#F0FDF4',
   },
   resultHeader: {
     flexDirection: 'row',
@@ -601,7 +653,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#ECFDF5',
   },
   resultHeaderText: {
     flex: 1,
@@ -609,7 +661,7 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111827',
+    color: '#064E3B',
     marginBottom: 4,
   },
   resultType: {
@@ -622,7 +674,7 @@ const styles = StyleSheet.create({
   confidenceLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#047857',
     marginBottom: 8,
   },
   progressBar: {
@@ -639,7 +691,7 @@ const styles = StyleSheet.create({
   confidenceValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
+    color: '#064E3B',
     textAlign: 'right',
   },
   section: {
@@ -648,7 +700,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: '#064E3B',
     marginBottom: 12,
   },
   sectionContent: {
@@ -657,7 +709,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   badge: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#065F46',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -674,22 +726,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#ECFDF5',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
   },
   chipText: {
     fontSize: 13,
-    color: '#374151',
+    color: '#065F46',
     fontWeight: '500',
   },
   warningSection: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#FFFBEB',
     padding: 16,
     borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
+    borderLeftColor: '#D97706',
   },
   warningSectionHeader: {
     flexDirection: 'row',
@@ -715,6 +769,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     alignItems: 'center',
     marginBottom: 20,
+    backgroundColor: '#F8FCF9',
   },
   simpleResultText: {
     fontSize: 28,
@@ -723,7 +778,7 @@ const styles = StyleSheet.create({
   },
   confidenceText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#047857',
     fontWeight: '500',
   },
   scoreSection: {
@@ -731,11 +786,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#ECFDF5',
   },
   scoreLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#047857',
     marginBottom: 8,
   },
   scoreDisplay: {
@@ -746,11 +801,11 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#10B981',
+    color: '#065F46',
   },
   scoreMax: {
     fontSize: 24,
-    color: '#6B7280',
+    color: '#047857',
     marginLeft: 4,
   },
   starsRow: {
@@ -761,10 +816,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  errorText: {
-    fontSize: 24,
+  errorTitle: {
+    fontSize: 20,
     fontWeight: '700',
-    color: '#EF4444',
+    color: '#DC2626',
     marginBottom: 8,
   },
   errorDetail: {
@@ -782,7 +837,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(6, 78, 59, 0.4)',
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -795,43 +850,45 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: '#064E3B',
     marginBottom: 20,
     textAlign: 'center',
   },
   modeOption: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FCF9',
     padding: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: '#ECFDF5',
   },
   modeOptionSelected: {
     backgroundColor: '#ECFDF5',
-    borderColor: '#10B981',
+    borderColor: '#065F46',
   },
   modeOptionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: '#064E3B',
     marginBottom: 8,
   },
   modeOptionDesc: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#047857',
     lineHeight: 20,
   },
   modalCloseButton: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8FCF9',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#ECFDF5',
   },
   modalCloseButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#047857',
   },
 });
