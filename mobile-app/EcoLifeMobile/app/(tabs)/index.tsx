@@ -5,32 +5,48 @@ import {
   View, 
   TouchableOpacity, 
   ScrollView, 
-  ActivityIndicator
+  ActivityIndicator,
+  Modal,
+  Image
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Line } from 'react-native-svg';
 
 const API_BASE = 'http://10.219.49.127:5500';
 
-type WasteType = 'recyclable' | 'organic' | 'landfill';
+type WasteType = 'recyclable_paper' | 'recyclable_plastic' | 'recyclable_glass' | 
+                 'recyclable_metal' | 'organic_food' | 'organic_yard' | 
+                 'landfill_general' | 'hazardous' | 'e_waste';
 
-interface WasteResult {
+interface AdvancedWasteResult {
   waste_type: WasteType;
+  category_name: string;
+  confidence: number;
+  subcategories: string[];
+  disposal_instructions: string;
+  recycling_code: string;
+  tips: string[];
+  contamination_warnings: string[];
+  mode: 'advanced';
+}
+
+interface SimpleWasteResult {
+  waste_type: 'recyclable' | 'organic' | 'landfill';
   confidence: number;
   tips: string[];
-  error?: string;
+  mode: 'simple';
 }
 
 interface ProductResult {
   sustainability_score: number;
   found_keywords: string[];
   extracted_text: string;
-  error?: string;
 }
 
-type ApiResult = WasteResult | ProductResult | { error: string; details?: string };
+type ApiResult = AdvancedWasteResult | SimpleWasteResult | ProductResult | { error: string };
 
+// SVG Icons
 const CameraIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <Path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -41,38 +57,21 @@ const CameraIcon = () => (
 const GalleryIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <Path d="M4 16L8.586 11.414C8.96106 11.0391 9.46967 10.8284 10 10.8284C10.5303 10.8284 11.0389 11.0391 11.414 11.414L16 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M14 14L15.586 12.414C15.9611 12.0391 16.4697 11.8284 17 11.8284C17.5303 11.8284 18.0389 12.0391 18.414 12.414L20 14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     <Rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="2"/>
   </Svg>
 );
 
-const AnalyzeIcon = () => (
-  <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <Path d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+const RecycleIcon = () => (
+  <Svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+    <Path d="M16 2L20 6L16 10M8 22L4 18L8 14M20 6H10C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V18M4 18H14C15.0609 18 16.0783 17.5786 16.8284 16.8284C17.5786 16.0783 18 15.0609 18 14V6" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
 );
 
-const RecyclableIcon = () => (
-  <Svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-    <Path d="M16 2L20 6L16 10" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M8 22L4 18L8 14" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M20 6H10C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V18" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M4 18H14C15.0609 18 16.0783 17.5786 16.8284 16.8284C17.5786 16.0783 18 15.0609 18 14V6" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </Svg>
-);
-
-const OrganicIcon = () => (
-  <Svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-    <Path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M7.5 10.5C7.5 10.5 8.25 12 9.75 12C11.25 12 12 10.5 12 10.5C12 10.5 12.75 12 14.25 12C15.75 12 16.5 10.5 16.5 10.5" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M9 16C9 16 9.75 17 12 17C14.25 17 15 16 15 16" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </Svg>
-);
-
-const LandfillIcon = () => (
-  <Svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-    <Path d="M3 6H5H21" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+const WarningIcon = () => (
+  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <Path d="M10.29 3.86L1.82 18C1.64537 18.3024 1.55296 18.6453 1.55199 18.9945C1.55101 19.3437 1.64149 19.6871 1.81442 19.9905C1.98735 20.2939 2.23673 20.5467 2.53771 20.7239C2.8387 20.901 3.18067 20.9962 3.53 21H20.47C20.8193 20.9962 21.1613 20.901 21.4623 20.7239C21.7633 20.5467 22.0127 20.2939 22.1856 19.9905C22.3585 19.6871 22.449 19.3437 22.448 18.9945C22.447 18.6453 22.3546 18.3024 22.18 18L13.71 3.86C13.5317 3.56611 13.2807 3.32312 12.9812 3.15448C12.6817 2.98585 12.3437 2.89725 12 2.89725C11.6563 2.89725 11.3183 2.98585 11.0188 3.15448C10.7193 3.32312 10.4683 3.56611 10.29 3.86Z" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Line x1="12" y1="9" x2="12" y2="13" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
+    <Circle cx="12" cy="17" r="1" fill="#F59E0B"/>
   </Svg>
 );
 
@@ -82,52 +81,22 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
   </Svg>
 );
 
-const TipIcon = () => (
-  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <Path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M12 16V12" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <Path d="M12 8H12.01" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </Svg>
-);
-
-const ECO_TIPS = {
-  recyclable: [
-    "Rinse containers thoroughly to prevent contamination",
-    "Flatten cardboard boxes to maximize recycling space",
-    "Verify local recycling guidelines for specific materials",
-    "Remove labels and caps for better processing efficiency",
-    "Consider upcycling glass containers for storage",
-    "Aluminum maintains quality through infinite recycling"
-  ],
-  organic: [
-    "Establish compost system for food and yard waste",
-    "Balance green and brown materials for optimal compost",
-    "Maintain proper moisture levels in compost",
-    "Aerate compost weekly for faster decomposition",
-    "Use finished compost as organic soil amendment",
-    "Exclude meat and dairy to prevent pests"
-  ],
-  landfill: [
-    "Reduce single-use items by 30% monthly",
-    "Develop repair skills to extend product life",
-    "Organize community exchange events",
-    "Choose minimal and recyclable packaging",
-    "Invest in durable, long-lasting products",
-    "Calculate and reduce carbon footprint"
-  ]
-};
-
 export default function HomeScreen() {
   const [result, setResult] = useState<ApiResult | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'simple' | 'advanced'>('advanced');
+  const [showModeModal, setShowModeModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const takePicture = async (): Promise<void> => {
-    setLoading(true);
+  const takePicture = async () => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') return;
+      if (status !== 'granted') {
+        alert('Camera permission is required!');
+        return;
+      }
 
-      let result = await ImagePicker.launchCameraAsync({
+      const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
@@ -135,18 +104,17 @@ export default function HomeScreen() {
       });
 
       if (!result.canceled && result.assets[0]?.base64) {
+        setSelectedImage(result.assets[0].uri);
         await classifyWaste(result.assets[0].base64);
       }
     } catch (error) {
-      setResult({ error: 'Image capture failed' });
+      setResult({ error: 'Camera error occurred' });
     }
-    setLoading(false);
   };
 
-  const pickImage = async (): Promise<void> => {
-    setLoading(true);
+  const pickImage = async () => {
     try {
-      let result = await ImagePicker.launchImageLibraryAsync({
+      const result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
@@ -154,137 +122,108 @@ export default function HomeScreen() {
       });
 
       if (!result.canceled && result.assets[0]?.base64) {
+        setSelectedImage(result.assets[0].uri);
         await classifyWaste(result.assets[0].base64);
       }
     } catch (error) {
       setResult({ error: 'Image selection failed' });
     }
-    setLoading(false);
   };
 
-  const classifyWaste = async (base64Image: string): Promise<void> => {
+  const classifyWaste = async (base64Image: string) => {
+    setLoading(true);
+    setResult(null);
+    
     try {
-      const response = await axios.post<WasteResult>(`${API_BASE}/classify-waste`, {
+      const endpoint = mode === 'advanced' 
+        ? '/classify-waste/advanced'
+        : '/classify-waste/simple';
+      
+      const response = await axios.post(`${API_BASE}${endpoint}`, {
         image: base64Image
       }, {
-        timeout: 10000,
-        headers: {'Content-Type': 'application/json'}
+        timeout: 15000,
+        headers: { 'Content-Type': 'application/json' }
       });
       
-      const enhancedResult = {
-        ...response.data,
-        advanced_tips: ECO_TIPS[response.data.waste_type]
-      };
-      
-      setResult(enhancedResult);
+      setResult(response.data);
     } catch (error: any) {
-      setResult({ error: `Connection failed: ${error.message}` });
+      console.error('Classification error:', error);
+      setResult({ 
+        error: error.response?.data?.error || 'Connection failed. Check if backend is running.' 
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const analyzeProduct = async (): Promise<void> => {
+  const analyzeProduct = async () => {
     setLoading(true);
+    setResult(null);
+    
     try {
-      const response = await axios.post<ProductResult>(`${API_BASE}/analyze-product`, {
+      const response = await axios.post(`${API_BASE}/analyze-product`, {
         image: 'demo'
+      }, {
+        timeout: 10000
       });
       
-      const analysis = analyzeProductImpact(response.data.found_keywords);
-      const enhancedResult = {
-        ...response.data,
-        sustainability_score: analysis.score,
-        insights: analysis.insights,
-        recommendation: getProductRecommendation(analysis.score)
-      };
-      
-      setResult(enhancedResult);
+      setResult(response.data);
     } catch (error: any) {
-      setResult({ error: 'Analysis unavailable' });
+      setResult({ 
+        error: error.response?.data?.error || 'Product analysis unavailable' 
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const analyzeProductImpact = (keywords: string[]): { score: number; insights: string[] } => {
-    let score = 5;
-    const positiveKeywords = ['organic', 'biodegradable', 'compostable', 'recyclable', 'sustainable'];
-    const negativeKeywords = ['plastic', 'chemical', 'toxic', 'pollution'];
-    
-    const positiveMatches = keywords.filter(kw => positiveKeywords.includes(kw.toLowerCase()));
-    const negativeMatches = keywords.filter(kw => negativeKeywords.includes(kw.toLowerCase()));
-    
-    score += positiveMatches.length * 1.5;
-    score -= negativeMatches.length * 2;
-    score = Math.max(1, Math.min(10, Math.round(score)));
-    
-    const insights: string[] = [];
-    if (positiveMatches.length > 0) insights.push(`Positive: ${positiveMatches.join(', ')}`);
-    if (negativeMatches.length > 0) insights.push(`Improve: ${negativeMatches.join(', ')}`);
-    if (score >= 8) insights.push("Excellent sustainable choice");
-    else if (score >= 6) insights.push("Good environmental option");
-    else insights.push("Consider alternatives");
-    
-    return { score, insights };
+  const getWasteColor = (type: string): string => {
+    if (type.includes('recyclable')) return '#10B981';
+    if (type.includes('organic')) return '#F59E0B';
+    if (type === 'hazardous') return '#EF4444';
+    if (type === 'e_waste') return '#8B5CF6';
+    return '#6B7280';
   };
 
-  const getWasteColor = (type: WasteType) => {
-    const colors: Record<WasteType, string> = { 
-      recyclable: '#10B981', 
-      organic: '#F59E0B', 
-      landfill: '#6B7280' 
-    };
-    return { color: colors[type] };
+  const formatWasteType = (type: string): string => {
+    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const getWasteIcon = (type: WasteType) => {
-    const icons = {
-      recyclable: <RecyclableIcon />,
-      organic: <OrganicIcon />,
-      landfill: <LandfillIcon />
-    };
-    return icons[type];
+  const isAdvancedResult = (res: ApiResult): res is AdvancedWasteResult => {
+    return 'mode' in res && res.mode === 'advanced';
   };
 
-  const getScoreStars = (score: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <StarIcon key={i} filled={i < Math.floor(score / 2)} />
-    ));
+  const isSimpleResult = (res: ApiResult): res is SimpleWasteResult => {
+    return 'mode' in res && res.mode === 'simple';
   };
 
-  const getScoreColor = (score: number): string => {
-    if (score >= 8) return '#10B981';
-    if (score >= 6) return '#F59E0B';
-    return '#EF4444';
-  };
-
-  const getProductRecommendation = (score: number): string => {
-    if (score >= 8) return "Excellent Sustainable Choice";
-    if (score >= 6) return "Good Environmental Option";
-    if (score >= 4) return "Average Impact";
-    return "High Environmental Impact";
-  };
-
-  const isWasteResult = (result: ApiResult): result is WasteResult & { advanced_tips?: string[] } => {
-    return 'waste_type' in result;
-  };
-
-  const isProductResult = (result: ApiResult): result is ProductResult & { 
-    insights?: string[]; 
-    recommendation?: string;
-  } => {
-    return 'sustainability_score' in result;
+  const isProductResult = (res: ApiResult): res is ProductResult => {
+    return 'sustainability_score' in res;
   };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text style={styles.title}>EcoLife</Text>
-        <Text style={styles.subtitle}>Sustainability Intelligence</Text>
+        <Text style={styles.title}>🌱 EcoLife</Text>
+        <Text style={styles.subtitle}>Advanced Waste Intelligence</Text>
+        
+        <TouchableOpacity 
+          style={styles.modeButton}
+          onPress={() => setShowModeModal(true)}
+        >
+          <Text style={styles.modeButtonText}>
+            Mode: {mode === 'advanced' ? '🔬 Advanced' : '⚡ Simple'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Waste Classification</Text>
+        <Text style={styles.cardTitle}>📸 Waste Classification</Text>
         <Text style={styles.cardDescription}>
-          Identify waste categories using advanced computer vision
+          {mode === 'advanced' 
+            ? 'Get detailed analysis with 9 waste categories, disposal instructions, and eco tips'
+            : 'Quick classification into recyclable, organic, or landfill'}
         </Text>
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.primaryButton} onPress={takePicture}>
@@ -299,56 +238,136 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Product Analysis</Text>
+        <Text style={styles.cardTitle}>🔍 Product Analysis</Text>
         <Text style={styles.cardDescription}>
-          Evaluate environmental impact and sustainability metrics
+          Analyze product sustainability and environmental impact
         </Text>
         <TouchableOpacity style={styles.secondaryButton} onPress={analyzeProduct}>
-          <AnalyzeIcon />
-          <Text style={styles.secondaryButtonText}>Analyze Product</Text>
+          <Text style={styles.secondaryButtonText}>Analyze Product (Demo)</Text>
         </TouchableOpacity>
       </View>
 
+      {selectedImage && (
+        <View style={styles.imagePreview}>
+          <Text style={styles.previewTitle}>Selected Image:</Text>
+          <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+        </View>
+      )}
+
       {loading && (
-        <View style={styles.card}>
+        <View style={styles.loadingCard}>
           <ActivityIndicator size="large" color="#10B981" />
-          <Text style={styles.loadingText}>Processing Analysis</Text>
+          <Text style={styles.loadingText}>
+            {mode === 'advanced' ? 'Running advanced analysis...' : 'Processing...'}
+          </Text>
         </View>
       )}
 
       {result && !loading && (
         <View style={styles.resultCard}>
-          <Text style={styles.resultTitle}>Analysis Results</Text>
-          
           {'error' in result ? (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Service Unavailable</Text>
+              <Text style={styles.errorText}>❌ Error</Text>
               <Text style={styles.errorDetail}>{result.error}</Text>
+              <Text style={styles.errorHint}>
+                💡 Make sure your backend is running on {API_BASE}
+              </Text>
             </View>
           ) : (
             <>
-              {isWasteResult(result) && (
+              {isAdvancedResult(result) && (
                 <>
-                  <View style={styles.resultSection}>
-                    <View style={styles.resultHeader}>
-                      {getWasteIcon(result.waste_type)}
-                      <Text style={[styles.resultValue, getWasteColor(result.waste_type)]}>
-                        {result.waste_type.toUpperCase()}
+                  <View style={styles.resultHeader}>
+                    <RecycleIcon />
+                    <View style={styles.resultHeaderText}>
+                      <Text style={styles.resultTitle}>{result.category_name}</Text>
+                      <Text style={[styles.resultType, { color: getWasteColor(result.waste_type) }]}>
+                        {formatWasteType(result.waste_type)}
                       </Text>
                     </View>
+                  </View>
+
+                  <View style={styles.confidenceBar}>
+                    <Text style={styles.confidenceLabel}>Confidence</Text>
+                    <View style={styles.progressBar}>
+                      <View style={[styles.progressFill, { 
+                        width: `${result.confidence * 100}%`,
+                        backgroundColor: getWasteColor(result.waste_type)
+                      }]} />
+                    </View>
+                    <Text style={styles.confidenceValue}>{Math.round(result.confidence * 100)}%</Text>
+                  </View>
+
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>♻️ Recycling Code</Text>
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{result.recycling_code}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>📋 Disposal Instructions</Text>
+                    <Text style={styles.sectionContent}>{result.disposal_instructions}</Text>
+                  </View>
+
+                  {result.subcategories.length > 0 && (
+                    <View style={styles.section}>
+                      <Text style={styles.sectionTitle}>🏷️ Subcategories</Text>
+                      <View style={styles.chipContainer}>
+                        {result.subcategories.map((sub, idx) => (
+                          <View key={idx} style={styles.chip}>
+                            <Text style={styles.chipText}>{formatWasteType(sub)}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+
+                  {result.contamination_warnings.length > 0 && (
+                    <View style={[styles.section, styles.warningSection]}>
+                      <View style={styles.warningSectionHeader}>
+                        <WarningIcon />
+                        <Text style={styles.sectionTitle}>⚠️ Contamination Warnings</Text>
+                      </View>
+                      {result.contamination_warnings.map((warning, idx) => (
+                        <Text key={idx} style={styles.warningText}>
+                          • {formatWasteType(warning)}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+
+                  {result.tips.length > 0 && (
+                    <View style={styles.section}>
+                      <Text style={styles.sectionTitle}>💡 Eco Tips</Text>
+                      {result.tips.slice(0, 3).map((tip, idx) => (
+                        <Text key={idx} style={styles.tipText}>• {tip}</Text>
+                      ))}
+                    </View>
+                  )}
+                </>
+              )}
+
+              {isSimpleResult(result) && (
+                <>
+                  <View style={styles.resultHeader}>
+                    <Text style={styles.resultTitle}>Classification Result</Text>
+                  </View>
+                  
+                  <View style={[styles.simpleResult, { borderColor: getWasteColor(result.waste_type) }]}>
+                    <Text style={[styles.simpleResultText, { color: getWasteColor(result.waste_type) }]}>
+                      {formatWasteType(result.waste_type)}
+                    </Text>
                     <Text style={styles.confidenceText}>
                       {Math.round(result.confidence * 100)}% confidence
                     </Text>
                   </View>
 
-                  {result.advanced_tips && (
-                    <View style={styles.tipsSection}>
-                      <View style={styles.tipsHeader}>
-                        <TipIcon />
-                        <Text style={styles.tipsTitle}>Optimization Guidelines</Text>
-                      </View>
-                      {result.advanced_tips.map((tip, index) => (
-                        <Text key={index} style={styles.tipText}>• {tip}</Text>
+                  {result.tips.length > 0 && (
+                    <View style={styles.section}>
+                      <Text style={styles.sectionTitle}>💡 Tips</Text>
+                      {result.tips.map((tip, idx) => (
+                        <Text key={idx} style={styles.tipText}>• {tip}</Text>
                       ))}
                     </View>
                   )}
@@ -357,27 +376,38 @@ export default function HomeScreen() {
 
               {isProductResult(result) && (
                 <>
-                  <View style={styles.resultSection}>
-                    <Text style={styles.resultLabel}>Sustainability Rating</Text>
-                    <View style={styles.ratingRow}>
-                      <View style={styles.starsRow}>
-                        {getScoreStars(result.sustainability_score)}
-                      </View>
-                      <Text style={[styles.scoreText, { color: getScoreColor(result.sustainability_score) }]}>
-                        {result.sustainability_score}/10
-                      </Text>
+                  <Text style={styles.resultTitle}>🌍 Product Sustainability</Text>
+                  
+                  <View style={styles.scoreSection}>
+                    <Text style={styles.scoreLabel}>Sustainability Score</Text>
+                    <View style={styles.scoreDisplay}>
+                      <Text style={styles.scoreValue}>{result.sustainability_score}</Text>
+                      <Text style={styles.scoreMax}>/10</Text>
                     </View>
-                    <Text style={styles.recommendationText}>
-                      {result.recommendation}
-                    </Text>
+                    <View style={styles.starsRow}>
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <StarIcon key={i} filled={i < Math.floor(result.sustainability_score / 2)} />
+                      ))}
+                    </View>
                   </View>
 
-                  {result.insights && (
-                    <View style={styles.insightsSection}>
-                      <Text style={styles.resultLabel}>Analysis Insights</Text>
-                      {result.insights.map((insight, index) => (
-                        <Text key={index} style={styles.insightText}>• {insight}</Text>
-                      ))}
+                  {result.found_keywords.length > 0 && (
+                    <View style={styles.section}>
+                      <Text style={styles.sectionTitle}>🔑 Keywords Found</Text>
+                      <View style={styles.chipContainer}>
+                        {result.found_keywords.map((kw, idx) => (
+                          <View key={idx} style={styles.chip}>
+                            <Text style={styles.chipText}>{kw}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+
+                  {result.extracted_text && (
+                    <View style={styles.section}>
+                      <Text style={styles.sectionTitle}>📝 Extracted Text</Text>
+                      <Text style={styles.sectionContent}>{result.extracted_text}</Text>
                     </View>
                   )}
                 </>
@@ -386,6 +416,52 @@ export default function HomeScreen() {
           )}
         </View>
       )}
+
+      <Modal
+        visible={showModeModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowModeModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Classification Mode</Text>
+            
+            <TouchableOpacity
+              style={[styles.modeOption, mode === 'advanced' && styles.modeOptionSelected]}
+              onPress={() => {
+                setMode('advanced');
+                setShowModeModal(false);
+              }}
+            >
+              <Text style={styles.modeOptionTitle}>🔬 Advanced Mode</Text>
+              <Text style={styles.modeOptionDesc}>
+                9 detailed categories with disposal instructions, recycling codes, and eco tips
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modeOption, mode === 'simple' && styles.modeOptionSelected]}
+              onPress={() => {
+                setMode('simple');
+                setShowModeModal(false);
+              }}
+            >
+              <Text style={styles.modeOptionTitle}>⚡ Simple Mode</Text>
+              <Text style={styles.modeOptionDesc}>
+                Quick 3-category classification: recyclable, organic, or landfill
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowModeModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -394,52 +470,57 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
-    paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingTop: 50,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
   },
   title: {
-    fontSize: 36,
-    fontWeight: '300',
+    fontSize: 40,
+    fontWeight: '700',
     color: '#111827',
-    letterSpacing: -0.5,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     color: '#6B7280',
-    marginTop: 8,
-    fontWeight: '400',
-    letterSpacing: 0.5,
+    marginBottom: 16,
+  },
+  modeButton: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  modeButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    padding: 28,
-    borderRadius: 20,
-    marginBottom: 20,
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 3,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   cardTitle: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 8,
-    letterSpacing: -0.3,
   },
   cardDescription: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#6B7280',
-    marginBottom: 24,
-    lineHeight: 22,
-    fontWeight: '400',
+    marginBottom: 20,
+    lineHeight: 20,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -447,166 +528,310 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: '#10B981',
-    padding: 18,
-    borderRadius: 14,
+    padding: 16,
+    borderRadius: 12,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 10,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    gap: 8,
   },
   secondaryButton: {
-    backgroundColor: '#FFFFFF',
-    padding: 18,
-    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 10,
-    borderWidth: 2,
-    borderColor: '#10B981',
   },
   buttonText: {
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 16,
-    letterSpacing: 0.3,
   },
   secondaryButtonText: {
-    color: '#10B981',
+    color: '#111827',
     fontWeight: '600',
     fontSize: 16,
-    letterSpacing: 0.3,
+  },
+  imagePreview: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  previewTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  loadingCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 40,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  loadingText: {
+    marginTop: 16,
+    color: '#6B7280',
+    fontSize: 16,
+    fontWeight: '500',
   },
   resultCard: {
     backgroundColor: '#FFFFFF',
-    padding: 28,
-    borderRadius: 20,
-    marginBottom: 20,
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 30,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  resultTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 24,
-    textAlign: 'center',
-    letterSpacing: -0.3,
-  },
-  resultSection: {
-    marginBottom: 28,
-    paddingBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
   resultHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 16,
+    marginBottom: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  resultHeaderText: {
+    flex: 1,
+  },
+  resultTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  resultType: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confidenceBar: {
+    marginBottom: 24,
+  },
+  confidenceLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
     marginBottom: 8,
   },
-  resultValue: {
-    fontSize: 22,
+  progressBar: {
+    height: 8,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  confidenceValue: {
+    fontSize: 14,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    color: '#111827',
+    textAlign: 'right',
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  sectionContent: {
+    fontSize: 15,
+    color: '#374151',
+    lineHeight: 22,
+  },
+  badge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  chipText: {
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  warningSection: {
+    backgroundColor: '#FEF3C7',
+    padding: 16,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B',
+  },
+  warningSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#92400E',
+    marginTop: 4,
+    lineHeight: 20,
+  },
+  tipText: {
+    fontSize: 14,
+    color: '#374151',
+    marginTop: 6,
+    lineHeight: 20,
+  },
+  simpleResult: {
+    padding: 24,
+    borderRadius: 12,
+    borderWidth: 3,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  simpleResultText: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 8,
   },
   confidenceText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#6B7280',
     fontWeight: '500',
   },
-  tipsSection: {
+  scoreSection: {
+    alignItems: 'center',
     marginBottom: 24,
+    paddingBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
-  tipsHeader: {
+  scoreLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  scoreDisplay: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 16,
-  },
-  tipsTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#111827',
-    letterSpacing: -0.2,
-  },
-  tipText: {
-    fontSize: 15,
-    color: '#374151',
-    marginTop: 8,
-    lineHeight: 22,
-    fontWeight: '400',
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'baseline',
     marginBottom: 12,
+  },
+  scoreValue: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  scoreMax: {
+    fontSize: 24,
+    color: '#6B7280',
+    marginLeft: 4,
   },
   starsRow: {
     flexDirection: 'row',
-    gap: 6,
-  },
-  scoreText: {
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  recommendationText: {
-    fontSize: 15,
-    color: '#6B7280',
-    fontStyle: 'italic',
-    marginTop: 6,
-  },
-  insightsSection: {
-    marginBottom: 24,
-  },
-  resultLabel: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
-    letterSpacing: -0.2,
-  },
-  insightText: {
-    fontSize: 15,
-    color: '#374151',
-    marginTop: 6,
-    lineHeight: 22,
-    fontWeight: '400',
+    gap: 4,
   },
   errorContainer: {
     alignItems: 'center',
     padding: 20,
   },
   errorText: {
+    fontSize: 24,
+    fontWeight: '700',
     color: '#EF4444',
-    fontSize: 18,
-    fontWeight: '600',
     marginBottom: 8,
   },
   errorDetail: {
+    fontSize: 16,
     color: '#6B7280',
-    fontSize: 14,
     textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 22,
+  },
+  errorHint: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modeOption: {
+    backgroundColor: '#F9FAFB',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+  },
+  modeOptionSelected: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#10B981',
+  },
+  modeOptionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  modeOptionDesc: {
+    fontSize: 14,
+    color: '#6B7280',
     lineHeight: 20,
   },
-  loadingText: {
-    textAlign: 'center',
-    marginTop: 16,
+  modalCloseButton: {
+    backgroundColor: '#F3F4F6',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  modalCloseButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#6B7280',
-    fontSize: 15,
-    fontWeight: '500',
   },
 });
