@@ -45,6 +45,28 @@ interface SimpleWasteResult {
   tips: string[];
   mode: "simple";
 }
+interface ProductResult {
+  sustainability_score: number;
+  confidence: number;
+  barcode_detected: boolean;
+  found_keywords: string[];
+  extracted_text: string;
+  recommendations: string[];
+  analysis_method: "barcode" | "ocr";
+  product_details?: {
+    name: string;
+    brand: string;
+    categories: string;
+    nutriscore: string;
+    ecoscore: string;
+    packaging: string;
+    labels: string;
+  };
+  packaging_analysis?: {
+    materials: string[];
+    packaging_score: number;
+  };
+}
 
 interface ProductResult {
   sustainability_score: number;
@@ -244,7 +266,25 @@ export default function HomeScreen() {
       setResult({ error: "Image selection failed" });
     }
   };
+  const getScoreColor = (score: number | string): any => {
+    if (typeof score === "string") {
+      const grade = score.toUpperCase();
+      const colorMap: Record<string, string> = {
+        A: "#059669",
+        B: "#84CC16",
+        C: "#EAB308",
+        D: "#F59E0B",
+        E: "#DC2626",
+      };
+      return { color: colorMap[grade] || "#6B7280" };
+    }
 
+    if (score >= 8) return "#059669";
+    if (score >= 6) return "#84CC16";
+    if (score >= 4) return "#EAB308";
+    if (score >= 2) return "#F59E0B";
+    return "#DC2626";
+  };
   const classifyWaste = async (base64Image: string) => {
     setLoading(true);
     setResult(null);
@@ -279,25 +319,48 @@ export default function HomeScreen() {
     }
   };
 
-  const analyzeProduct = async () => {
+  const analyzeProduct = async (base64Image?: string) => {
     setLoading(true);
     setResult(null);
 
     try {
+      let imageToSend = base64Image;
+
+      if (!imageToSend) {
+        const result = await ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.8,
+          base64: true,
+        });
+
+        if (result.canceled || !result.assets[0]?.base64) {
+          setLoading(false);
+          return;
+        }
+
+        imageToSend = result.assets[0].base64;
+        setSelectedImage(result.assets[0].uri);
+      }
+
       const response = await axios.post(
         `${API_BASE}/analyze-product`,
         {
-          image: "demo",
+          image: imageToSend,
         },
         {
-          timeout: 10000,
+          timeout: 20000,
+          headers: { "Content-Type": "application/json" },
         }
       );
 
       setResult(response.data);
     } catch (error: any) {
+      console.error("Product analysis error:", error);
       setResult({
-        error: error.response?.data?.error || "Product analysis unavailable",
+        error:
+          error.response?.data?.error ||
+          "Product analysis failed. Ensure backend is running.",
       });
     } finally {
       setLoading(false);
@@ -325,26 +388,26 @@ export default function HomeScreen() {
   };
 
   const isProductResult = (res: ApiResult): res is ProductResult => {
-    return "sustainability_score" in res;
+    return "sustainability_score" in res && "analysis_method" in res;
   };
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#065F46" barStyle="light-content" />
-      
+
       <View style={styles.topBar}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.menuButton}
           onPress={() => setShowSidebar(true)}
         >
           <MenuIcon />
         </TouchableOpacity>
-        
+
         <View style={styles.titleContainer}>
           <LeafIcon />
           <Text style={styles.topBarTitle}>EcoLife</Text>
         </View>
-        
+
         <View style={styles.placeholder} />
       </View>
 
@@ -362,23 +425,26 @@ export default function HomeScreen() {
                 <CloseIcon />
               </TouchableOpacity>
             </View>
-            
+
             <TouchableOpacity style={styles.sidebarItem}>
               <Text style={styles.sidebarItemText}>Waste Classification</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.sidebarItem}>
-              <Text style={styles.sidebarItemText}>Product Analysis</Text>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => analyzeProduct()}
+            >
+              <Text style={styles.secondaryButtonText}>Scan Product</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.sidebarItem}>
               <Text style={styles.sidebarItemText}>History</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.sidebarItem}>
               <Text style={styles.sidebarItemText}>Settings</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.sidebarItem}>
               <Text style={styles.sidebarItemText}>About</Text>
             </TouchableOpacity>
@@ -386,7 +452,10 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.subtitle}>Advanced Waste Intelligence</Text>
 
@@ -413,7 +482,10 @@ export default function HomeScreen() {
               : "Quick classification into recyclable, organic, or landfill categories"}
           </Text>
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.primaryButton} onPress={takePicture}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={takePicture}
+            >
               <CameraIcon />
               <Text style={styles.buttonText}>Camera</Text>
             </TouchableOpacity>
@@ -434,16 +506,19 @@ export default function HomeScreen() {
           </Text>
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={analyzeProduct}
+            onPress={() => analyzeProduct()}
           >
-            <Text style={styles.secondaryButtonText}>Analyze Product</Text>
+            <Text style={styles.secondaryButtonText}>Scan Product</Text>
           </TouchableOpacity>
         </View>
 
         {selectedImage && (
           <View style={styles.imagePreview}>
             <Text style={styles.previewTitle}>Selected Image</Text>
-            <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.previewImage}
+            />
           </View>
         )}
 
@@ -490,7 +565,9 @@ export default function HomeScreen() {
                     </View>
 
                     <View style={styles.confidenceBar}>
-                      <Text style={styles.confidenceLabel}>Confidence Level</Text>
+                      <Text style={styles.confidenceLabel}>
+                        Confidence Level
+                      </Text>
                       <View style={styles.progressBar}>
                         <View
                           style={[
@@ -613,36 +690,143 @@ export default function HomeScreen() {
 
                 {isProductResult(result) && (
                   <>
-                    <Text style={styles.resultTitle}>Product Sustainability</Text>
-
-                    <View style={styles.scoreSection}>
-                      <Text style={styles.scoreLabel}>Sustainability Score</Text>
-                      <View style={styles.scoreDisplay}>
-                        <Text style={styles.scoreValue}>
-                          {result.sustainability_score}
+                    <View style={styles.resultHeader}>
+                      <AnalyzeIcon />
+                      <View style={styles.resultHeaderText}>
+                        <Text style={styles.resultTitle}>
+                          Product Sustainability Analysis
                         </Text>
-                        <Text style={styles.scoreMax}>/10</Text>
-                      </View>
-                      <View style={styles.starsRow}>
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <StarIcon
-                            key={i}
-                            filled={
-                              i < Math.floor(result.sustainability_score / 2)
-                            }
-                          />
-                        ))}
+                        <Text style={styles.analysisMethod}>
+                          {result.barcode_detected
+                            ? "✓ Barcode Detected"
+                            : "OCR Analysis"}
+                        </Text>
                       </View>
                     </View>
 
+                    {/* Product Details (if barcode detected) */}
+                    {result.product_details && (
+                      <View style={styles.productDetailsSection}>
+                        <Text style={styles.sectionTitle}>
+                          Product Information
+                        </Text>
+                        <View style={styles.productInfo}>
+                          <Text style={styles.productName}>
+                            {result.product_details.name}
+                          </Text>
+                          <Text style={styles.productBrand}>
+                            {result.product_details.brand}
+                          </Text>
+
+                          {result.product_details.categories && (
+                            <Text style={styles.productCategories}>
+                              {result.product_details.categories}
+                            </Text>
+                          )}
+                        </View>
+
+                        {/* Scores */}
+                        <View style={styles.scoresRow}>
+                          {result.product_details.nutriscore !== "N/A" && (
+                            <View style={styles.scoreChip}>
+                              <Text style={styles.scoreLabel}>Nutri-Score</Text>
+                              <Text
+                                style={[
+                                  styles.scoreGrade,
+                                  getScoreColor(
+                                    result.product_details.nutriscore
+                                  ),
+                                ]}
+                              >
+                                {result.product_details.nutriscore.toUpperCase()}
+                              </Text>
+                            </View>
+                          )}
+
+                          {result.product_details.ecoscore !== "N/A" && (
+                            <View style={styles.scoreChip}>
+                              <Text style={styles.scoreLabel}>Eco-Score</Text>
+                              <Text
+                                style={[
+                                  styles.scoreGrade,
+                                  getScoreColor(
+                                    result.product_details.ecoscore
+                                  ),
+                                ]}
+                              >
+                                {result.product_details.ecoscore.toUpperCase()}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Sustainability Score */}
+                    <View style={styles.scoreSection}>
+                      <Text style={styles.scoreLabel}>
+                        Environmental Impact Score
+                      </Text>
+                      <View style={styles.scoreDisplay}>
+                        <Text style={styles.scoreValue}>
+                          {result.sustainability_score.toFixed(1)}
+                        </Text>
+                        <Text style={styles.scoreMax}>/10</Text>
+                      </View>
+
+                      <View style={styles.progressBar}>
+                        <View
+                          style={[
+                            styles.progressFill,
+                            {
+                              width: `${
+                                (result.sustainability_score / 10) * 100
+                              }%`,
+                              backgroundColor: getScoreColor(
+                                result.sustainability_score
+                              ),
+                            },
+                          ]}
+                        />
+                      </View>
+
+                      <Text style={styles.confidenceText}>
+                        {Math.round(result.confidence * 100)}% confidence
+                      </Text>
+                    </View>
+
+                    {/* Packaging Analysis */}
+                    {result.packaging_analysis && (
+                      <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>
+                          Packaging Analysis
+                        </Text>
+                        <View style={styles.chipContainer}>
+                          {result.packaging_analysis.materials.map(
+                            (material, idx) => (
+                              <View key={idx} style={styles.chip}>
+                                <Text style={styles.chipText}>{material}</Text>
+                              </View>
+                            )
+                          )}
+                        </View>
+                        <Text style={styles.packagingScore}>
+                          Packaging Score:{" "}
+                          {result.packaging_analysis.packaging_score.toFixed(1)}
+                          /10
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Keywords Found */}
                     {result.found_keywords.length > 0 && (
                       <View style={styles.section}>
                         <Text style={styles.sectionTitle}>
-                          Keywords Identified
+                          Sustainability Keywords
                         </Text>
                         <View style={styles.chipContainer}>
                           {result.found_keywords.map((kw, idx) => (
-                            <View key={idx} style={styles.chip}>
+                            <View key={idx} style={styles.keywordChip}>
                               <Text style={styles.chipText}>{kw}</Text>
                             </View>
                           ))}
@@ -650,14 +834,30 @@ export default function HomeScreen() {
                       </View>
                     )}
 
-                    {result.extracted_text && (
+                    {/* Recommendations */}
+                    {result.recommendations.length > 0 && (
                       <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Extracted Text</Text>
-                        <Text style={styles.sectionContent}>
-                          {result.extracted_text}
-                        </Text>
+                        <Text style={styles.sectionTitle}>Recommendations</Text>
+                        {result.recommendations.map((rec, idx) => (
+                          <View key={idx} style={styles.recommendationItem}>
+                            <Text style={styles.recommendationText}>
+                              • {rec}
+                            </Text>
+                          </View>
+                        ))}
                       </View>
                     )}
+
+                    {/* Extracted Text Preview */}
+                    {result.extracted_text &&
+                      result.extracted_text !== "No text detected" && (
+                        <View style={styles.section}>
+                          <Text style={styles.sectionTitle}>Detected Text</Text>
+                          <Text style={styles.extractedText}>
+                            {result.extracted_text}
+                          </Text>
+                        </View>
+                      )}
                   </>
                 )}
               </>
@@ -702,7 +902,9 @@ export default function HomeScreen() {
                   setShowModeModal(false);
                 }}
               >
-                <Text style={styles.modeOptionTitle}>Simple Classification</Text>
+                <Text style={styles.modeOptionTitle}>
+                  Simple Classification
+                </Text>
                 <Text style={styles.modeOptionDesc}>
                   Quick three-category classification: recyclable, organic, or
                   landfill waste
@@ -1078,11 +1280,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ECFDF5",
   },
-  scoreLabel: {
-    fontSize: 14,
-    color: "#047857",
-    marginBottom: 8,
-  },
+  // scoreLabel: {
+  //   fontSize: 14,
+  //   color: "#047857",
+  //   marginBottom: 8,
+  // },
   scoreDisplay: {
     flexDirection: "row",
     alignItems: "baseline",
@@ -1180,5 +1382,90 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#047857",
+  },
+  analysisMethod: {
+    fontSize: 14,
+    color: "#059669",
+    fontWeight: "600" as const,
+  },
+  productDetailsSection: {
+    backgroundColor: "#F0FDF4",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+  },
+  productInfo: {
+    marginTop: 8,
+  },
+  productName: {
+    fontSize: 18,
+    fontWeight: "700" as const,
+    color: "#064E3B",
+    marginBottom: 4,
+  },
+  productBrand: {
+    fontSize: 14,
+    fontWeight: "600" as const,
+    color: "#047857",
+    marginBottom: 8,
+  },
+  productCategories: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontStyle: "italic" as const,
+  },
+  scoresRow: {
+    flexDirection: "row" as const,
+    gap: 12,
+    marginTop: 12,
+  },
+  scoreChip: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center" as const,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  scoreLabel: {
+    fontSize: 11,
+    color: "#6B7280",
+    marginBottom: 4,
+    fontWeight: "600" as const,
+  },
+  scoreGrade: {
+    fontSize: 24,
+    fontWeight: "700" as const,
+  },
+  packagingScore: {
+    fontSize: 14,
+    color: "#047857",
+    marginTop: 8,
+    fontWeight: "600" as const,
+  },
+  keywordChip: {
+    backgroundColor: "#DBEAFE",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#93C5FD",
+  },
+  recommendationItem: {
+    marginBottom: 8,
+  },
+  recommendationText: {
+    fontSize: 14,
+    color: "#374151",
+    lineHeight: 20,
+  },
+  extractedText: {
+    fontSize: 13,
+    color: "#6B7280",
+    lineHeight: 18,
+    fontStyle: "italic" as const,
   },
 });
