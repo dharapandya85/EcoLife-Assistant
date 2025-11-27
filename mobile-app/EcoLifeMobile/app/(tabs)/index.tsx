@@ -704,7 +704,7 @@ export default function HomeScreen() {
                       </View>
                     </View>
 
-                    {/* Product Details (if barcode detected) */}
+        
                     {result.product_details && (
                       <View style={styles.productDetailsSection}>
                         <Text style={styles.sectionTitle}>
@@ -725,7 +725,7 @@ export default function HomeScreen() {
                           )}
                         </View>
 
-                        {/* Scores */}
+                  
                         <View style={styles.scoresRow}>
                           {result.product_details.nutriscore !== "N/A" && (
                             <View style={styles.scoreChip}>
@@ -762,7 +762,7 @@ export default function HomeScreen() {
                       </View>
                     )}
 
-                    {/* Sustainability Score */}
+                
                     <View style={styles.scoreSection}>
                       <Text style={styles.scoreLabel}>
                         Environmental Impact Score
@@ -795,7 +795,7 @@ export default function HomeScreen() {
                       </Text>
                     </View>
 
-                    {/* Packaging Analysis */}
+              
                     {result.packaging_analysis && (
                       <View style={styles.section}>
                         <Text style={styles.sectionTitle}>
@@ -818,7 +818,7 @@ export default function HomeScreen() {
                       </View>
                     )}
 
-                    {/* Keywords Found */}
+          
                     {result.found_keywords.length > 0 && (
                       <View style={styles.section}>
                         <Text style={styles.sectionTitle}>
@@ -1278,11 +1278,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ECFDF5",
   },
-  // scoreLabel: {
-  //   fontSize: 14,
-  //   color: "#047857",
-  //   marginBottom: 8,
-  // },
+  
   scoreDisplay: {
     flexDirection: "row",
     alignItems: "baseline",
